@@ -1,19 +1,41 @@
 <template>
-  <hello-world />
+  <h1 class="display-3 sstitle">Stroke Sync</h1>
+  <Login v-if="!loggedIn"></Login>
+  <GarminApp v-if="loggedIn && showGarmin"></GarminApp>
 </template>
 
-<script>
-import HelloWorld from '@/components/HelloWorld.vue'
+<script setup>
+  import Login from '@/components/Login.vue'
+  import GarminApp from '@/components/GarminApp.vue'
 
-export default {
-  name: 'App',
-  components: { HelloWorld }
-}
+  import { onMounted, ref } from 'vue'
+  import firebase from 'firebase/app'
+
+  const loggedIn = ref(true);
+  const showGarmin = ref(true);
+
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user && user.emailVerified) {
+      loggedIn.value = true;
+    } else {
+      loggedIn.value = false;
+    }
+  });
+
+  onMounted(async () => {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    const url = new URL(tab.url);
+    showGarmin.value = url.hostname == 'connect.garmin.com';
+  });
 </script>
 
 <style>
-html {
-  width: 400px;
-  height: 400px;
-}
+  html {
+    width: 400px;
+  }
+
+  .sstitle {
+    text-align: center;
+    padding: 10px;
+  }
 </style>
