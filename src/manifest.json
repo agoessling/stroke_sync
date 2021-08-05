@@ -14,5 +14,11 @@
     ],
     "persistent": false
   },
+  "content_scripts": [
+    {
+      "matches": ["*://connect.garmin.com/*"],
+      "js": ["js/garmin.js"]
+    }
+  ],
   "permissions": ["tabs"]
 }
