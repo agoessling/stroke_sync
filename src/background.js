@@ -1,4 +1,4 @@
-browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  console.log([request, sender, sendResponse])
-  console.log('Hello from the background')
-})
+browser.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
+  console.log([request, sender, sendResponse]);
+  console.log('Hello from the background');
+});

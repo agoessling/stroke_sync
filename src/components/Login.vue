@@ -14,7 +14,7 @@
   import 'firebaseui/dist/firebaseui.css'
 
   const verifyEmail = ref(false);
-  const ui = new firebaseui.auth.AuthUI(firebase.auth());
+  const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
 
   function startAuth() {
     verifyEmail.value = false;

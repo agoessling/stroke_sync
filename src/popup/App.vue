@@ -1,4 +1,5 @@
 <template>
+  <div class="link" @click.prevent="signOut">Sign Out</div>
   <h1 class="display-3 sstitle">Stroke Sync</h1>
   <Login v-if="!loggedIn"></Login>
   <GarminApp v-if="loggedIn && showGarmin"></GarminApp>
@@ -21,6 +22,10 @@
       loggedIn.value = false;
     }
   });
+
+  function signOut() {
+    firebase.auth().signOut();
+  }
 
   onMounted(async () => {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });

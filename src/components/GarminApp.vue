@@ -1,12 +1,26 @@
 <template>
-  <va-button @click="onSync">Sync</va-button>
+  <div v-if="!garminLoggedIn">Please log into Garmin Connect.</div>
+  <div v-else>
+    <div v-show="showSyncBusy">Syncing...</div>
+    <div v-show="showSyncNumber">{{ syncNumber }} rounds sync'd.</div>
+    <va-button @click="onSync">Sync</va-button>
+  </div>
 </template>
 
 <script setup>
-  import { sendMessage } from '@/ext_lib.js';
+  import { syncRounds } from '@/garmin.js';
+  import { ref } from 'vue';
 
   import firebase from 'firebase/app';
-  import 'firebase/firestore';
+
+  let garminLoggedIn = ref(true);
+  let syncNumber = ref(0);
+  let showSyncNumber = ref(false);
+  let showSyncBusy = ref(false);
+
+  chrome.cookies.get({url: 'https://connect.garmin.com', name: 'GARMIN-SSO'}, (x) => {
+    garminLoggedIn.value = x != null;
+  });
 
   async function onSync() {
     const user = firebase.auth().currentUser;
@@ -14,27 +28,14 @@
       return;
     }
 
-    const db = firebase.firestore();
+    showSyncNumber.value = false;
+    showSyncBusy.value = true;
 
-    const summaryPromise = sendMessage({ type: 'getSummaries', args: { number: 10 } });
-    const userDocPromise = db.collection('users').doc(user.uid).get();
+    const number = await syncRounds(user);
 
-    const [summary, userDoc] = Promise.all([summaryPromise, userDocPromise]);
-
-    let garminIds = [];
-    if (userDoc.exists && userDoc.get('garminIds')) {
-      garminIds = userDoc.get('garminIds');
-    }
-
-    const summaryIds = summary.scorecardSummaries.map(({ id }) => id);
-    const newIds = summaryIds.filter(x => !garminIds.includes(x));
-
-    const promises = scorecardIds.map((id) => {
-      return sendMessage({ type: 'getDetail', args: { scorecardId: id } });
-    });
-    const details = await Promise.all(promises);
-    console.log(details);
-
+    syncNumber.value = number;
+    showSyncBusy.value = false;
+    showSyncNumber.value = true;
   }
 </script>
 

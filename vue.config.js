@@ -12,11 +12,6 @@ module.exports = {
         background: {
           entry: 'src/background.js'
         },
-        contentScripts: {
-          entries: {
-            garmin: 'src/garmin.js'
-          }
-        }
       }
     }
   }
