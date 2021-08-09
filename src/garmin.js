@@ -3,6 +3,10 @@ export { syncRounds }
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 
+function orNull(val) {
+  return val ? val : null;
+}
+
 async function getJson(url) {
   const response = await fetch(url, {
     method: 'GET',
@@ -60,6 +64,49 @@ function getHoleDetail(scorecardId) {
   return getJson(url.href);
 }
 
+function getStandardRoundFromGarmin(round) {
+  const scorecardDetail = round.rawData.garmin.scorecardDetail;
+  const courseSnapshot = scorecardDetail.courseSnapshots[0];
+  const scorecard = scorecardDetail.scorecardDetails[0].scorecard;
+  const scorecardStats = scorecardDetail.scorecardDetails[0].scorecardStats;
+
+  const output = {};
+
+  output.courseName = courseSnapshot.name;
+  output.datePlayed = new Date(scorecard.endTime);
+  output.teeBox = scorecard.teeBox.toLowerCase();
+  output.par = courseSnapshot.roundPar;
+  output.strokes = scorecardStats.round.strokes;
+
+  output.holes = [];
+
+  for (let i = 0; i < 18; ++i) {
+    const hole = {};
+    hole.number = i + 1;
+    hole.par = Number(courseSnapshot.holePars[i]);
+
+    const garminHole = scorecard.holes[i];
+    hole.strokes = garminHole ? orNull(garminHole.strokes) : null;
+    hole.putts = garminHole ? orNull(garminHole.putts) : null;
+
+    if (garminHole && garminHole.penalties) {
+      hole.penalties = Array(garminHole.penalties).fill('outOfBounds');
+    } else {
+      hole.penalties = [];
+    }
+
+    if (garminHole && garminHole.fairwayShotOutcome) {
+      hole.teeShot = garminHole.fairwayShotOutcome.toLowerCase();
+    } else {
+      hole.teeShot = null;
+    }
+
+    output.holes.push(hole);
+  }
+
+  return output;
+}
+
 async function getIdsToSync(user) {
   const db = firebase.firestore();
 
@@ -107,17 +154,24 @@ async function syncIds(user, ids) {
 
   for (let [scorecardDetail, holeDetail] of details) {
     const roundDocRef = userDocRef.collection('rounds').doc();
-    batch.set(roundDocRef,
-      {
-        rawData: {
-          garmin: {
-            scorecardDetail: scorecardDetail,
-            holeDetail: holeDetail,
-            clubTypes: clubTypes
-          }
-        }
-      }
-    );
+
+    let roundDoc = {
+      syncStatus: {
+        garmin: true,
+        grint: false,
+      },
+      rawData: {
+        garmin: {
+          scorecardDetail: scorecardDetail,
+          holeDetail: holeDetail,
+          clubTypes: clubTypes,
+        },
+      },
+    };
+
+    Object.assign(roundDoc, getStandardRoundFromGarmin(roundDoc));
+
+    batch.set(roundDocRef, roundDoc);
   }
 
   return batch.commit();

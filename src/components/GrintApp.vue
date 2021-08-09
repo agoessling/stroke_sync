@@ -1,28 +1,25 @@
 <template>
-  <div v-if="!garminLoggedIn">Please log into Garmin Connect.</div>
+  <div v-if="!grintLoggedIn">Please log into The Grint.</div>
   <div v-else>
     <div v-show="showSyncBusy">Syncing...</div>
-    <div v-show="showSyncNumber">{{ syncNumber }} rounds exported.</div>
-    <va-button @click="onSync">Export</va-button>
+    <div v-show="showSyncNumber">{{ syncNumber }} rounds imported.</div>
+    <va-button @click="onImportAll">Import All</va-button>
   </div>
 </template>
 
 <script setup>
-  import { syncRounds } from '@/garmin.js';
   import { ref } from 'vue';
+
+  import { importRounds } from '@/grint.js';
 
   import firebase from 'firebase/app';
 
-  let garminLoggedIn = ref(true);
+  let grintLoggedIn = ref(true);
   let syncNumber = ref(0);
   let showSyncNumber = ref(false);
   let showSyncBusy = ref(false);
 
-  chrome.cookies.get({url: 'https://connect.garmin.com', name: 'GARMIN-SSO'}, (x) => {
-    garminLoggedIn.value = x != null;
-  });
-
-  async function onSync() {
+  async function onImportAll() {
     const user = firebase.auth().currentUser;
     if (!user || !user.emailVerified) {
       return;
@@ -31,7 +28,7 @@
     showSyncNumber.value = false;
     showSyncBusy.value = true;
 
-    const number = await syncRounds(user);
+    const number = await importRounds(user);
 
     syncNumber.value = number;
     showSyncBusy.value = false;

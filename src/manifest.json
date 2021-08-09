@@ -14,5 +14,10 @@
     ],
     "persistent": false
   },
-  "permissions": ["tabs", "cookies", "https://connect.garmin.com/"]
+  "permissions": [
+    "tabs",
+    "cookies",
+    "https://connect.garmin.com/",
+    "https://thegrint.com/"
+  ]
 }
