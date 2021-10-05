@@ -22,7 +22,7 @@ async function createInsertData(roundDoc) {
     ['green'],
     ['forward', 'red'],
     ['resort'],
-    ['middle', 'white', 'member'],
+    ['middle', 'white', 'member', 'regular'],
     ['back', 'blue', 'gold', 'championship'],
     ['black', 'tournament'],
     ['professional'],
