@@ -48,6 +48,9 @@ async function createInsertData(roundDoc) {
     data.tees = closestOption;
   }
 
+  // Default to middle if all else fails.
+  if (!data.tees) data.tees = teeOptions[Math.floor(teeOptions.length / 2)];
+
   const penaltyLookup = {
     waterHazard: 'w',
     dropShot: 'd',
