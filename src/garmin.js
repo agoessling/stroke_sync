@@ -73,7 +73,13 @@ function getStandardRoundFromGarmin(round) {
   const output = {};
 
   output.courseName = courseSnapshot.name;
-  output.datePlayed = new Date(scorecard.endTime);
+
+  if ('endTime' in scorecard) {
+    output.datePlayed = new Date(scorecard.endTime);
+  } else {
+    output.datePlayed = new Date();
+  }
+
   output.teeBox = scorecard.teeBox.toLowerCase();
   output.par = courseSnapshot.roundPar;
   output.strokes = scorecardStats.round.strokes;
